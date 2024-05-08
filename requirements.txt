@@ -1,1 +1,1 @@
-streamlite 1.34.0 
+streamlite== 1.34.0 
