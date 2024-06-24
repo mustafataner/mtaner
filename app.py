@@ -33,7 +33,7 @@ async def check_for_updates():
     else:
         await send_telegram_message("Duyuru bulunamadı.")
     while True:
-        await asyncio.sleep(900)  # 15 dakika bekle
+        await asyncio.sleep(300)  # 5 dakika bekle
         new_announcement = get_latest_announcement(URL)
         if new_announcement != latest_announcement:
             await send_telegram_message(f"Yeni duyuru: {new_announcement}")
