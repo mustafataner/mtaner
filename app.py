@@ -2,7 +2,7 @@ import os
 import asyncio
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service as ChromeService
-from selenium.webdriver.common.by import By
+from webdriver_manager.chrome import ChromeDriverManager
 from telegram import Bot
 from telegram.constants import ParseMode
 
@@ -25,7 +25,7 @@ def capture_screenshot(url):
     options.add_argument("--no-sandbox")
     options.add_argument("--disable-dev-shm-usage")
     options.add_argument("--disable-gpu")
-    driver = webdriver.Chrome(service=ChromeService('/usr/local/bin/chromedriver'), options=options)
+    driver = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()), options=options)
     
     driver.get(url)
     screenshot_path = "/tmp/duyurular_screenshot.png"
