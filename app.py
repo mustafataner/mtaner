@@ -20,8 +20,8 @@ async def send_telegram_message(message):
 def get_latest_announcement(url):
     response = requests.get(url)
     soup = BeautifulSoup(response.text, 'html.parser')
-    # En son duyuruyu seçiyoruz (ilk <a class="announce-text"> etiketi)
-    latest_announcement = soup.find('a', class_='announce-text', href=True)
+    # Sağlanan XPath kullanılarak duyuru bağlantısını bulma
+    latest_announcement = soup.select_one('div.card-content.d-md-flex.flex-column.announcementdaha a.announce-text[href]')
     if latest_announcement:
         return "http://www.diyarbakir.gov.tr" + latest_announcement['href']
     return None
@@ -33,7 +33,7 @@ async def check_for_updates():
     else:
         await send_telegram_message("Duyuru bulunamadı.")
     while True:
-        await asyncio.sleep(300)  # 5 dakika bekle
+        await asyncio.sleep(900)  # 15 dakika bekle
         new_announcement = get_latest_announcement(URL)
         if new_announcement != latest_announcement:
             await send_telegram_message(f"Yeni duyuru: {new_announcement}")
