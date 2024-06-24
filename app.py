@@ -3,13 +3,14 @@ from bs4 import BeautifulSoup
 from telegram import Bot
 from telegram.constants import ParseMode
 import asyncio
+import os
 
 # Duyuru sayfası URL'si
 URL = 'http://www.diyarbakir.gov.tr/duyurular'
 
-# Telegram bot token ve chat id
-BOT_TOKEN = '7330415458:AAHcjDsePpNm7LA8dfWf2qwCmNhCLG6wCdw'
-CHAT_ID = 'your_chat_id'
+# Telegram bot token ve chat id ortam değişkenlerinden alınıyor
+BOT_TOKEN = os.getenv('BOT_TOKEN')
+CHAT_ID = os.getenv('CHAT_ID')
 
 bot = Bot(token=BOT_TOKEN)
 
@@ -39,5 +40,4 @@ async def check_for_updates():
             latest_announcement = new_announcement
 
 if __name__ == '__main__':
-    loop = asyncio.get_event_loop()
-    loop.run_until_complete(check_for_updates())
+    asyncio.run(check_for_updates())
