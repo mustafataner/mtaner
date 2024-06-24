@@ -20,10 +20,10 @@ async def send_telegram_message(message):
 def get_latest_announcement(url):
     response = requests.get(url)
     soup = BeautifulSoup(response.text, 'html.parser')
-    # En son duyuruyu seçiyoruz (ilk <a> etiketi)
-    latest_announcement = soup.find('a', href=True)
+    # En son duyuruyu seçiyoruz (ilk <a class="announce-text"> etiketi)
+    latest_announcement = soup.find('a', class_='announce-text', href=True)
     if latest_announcement:
-        return latest_announcement['href']
+        return "http://www.diyarbakir.gov.tr" + latest_announcement['href']
     return None
 
 async def check_for_updates():
