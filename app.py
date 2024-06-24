@@ -7,26 +7,35 @@ from time import sleep
 URL = 'http://www.diyarbakir.gov.tr/duyurular'
 
 # Telegram bot token ve chat id
-BOT_TOKEN = 'your_telegram_bot_token'
-CHAT_ID = 'your_chat_id'
+BOT_TOKEN = '7330415458:AAHcjDsePpNm7LA8dfWf2qwCmNhCLG6wCdw'
+CHAT_ID = '-4279731069'
 
 bot = Bot(token=BOT_TOKEN)
 
 def send_telegram_message(message):
     bot.send_message(chat_id=CHAT_ID, text=message)
 
-def get_page_content(url):
+def get_latest_announcement(url):
     response = requests.get(url)
-    return response.text
+    soup = BeautifulSoup(response.text, 'html.parser')
+    # En son duyuruyu seçiyoruz (ilk <a> etiketi)
+    latest_announcement = soup.find('a', href=True)
+    if latest_announcement:
+        return latest_announcement['href']
+    return None
 
 def check_for_updates():
-    initial_content = get_page_content(URL)
+    latest_announcement = get_latest_announcement(URL)
+    if latest_announcement:
+        send_telegram_message(f"Son duyuru: {latest_announcement}")
+    else:
+        send_telegram_message("Duyuru bulunamadı.")
     while True:
         sleep(900)  # 15 dakika bekle
-        new_content = get_page_content(URL)
-        if new_content != initial_content:
-            send_telegram_message('Diyarbakır Valiliği duyuru sayfasında yeni bir duyuru var.')
-            initial_content = new_content
+        new_announcement = get_latest_announcement(URL)
+        if new_announcement != latest_announcement:
+            send_telegram_message(f"Yeni duyuru: {new_announcement}")
+            latest_announcement = new_announcement
 
 if __name__ == '__main__':
     check_for_updates()
