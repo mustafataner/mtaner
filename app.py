@@ -39,7 +39,7 @@ async def check_for_updates():
         await send_telegram_message(screenshot_path)
     
     while True:
-        await asyncio.sleep(900)  # 15 dakika bekle
+        await asyncio.sleep(300)  # 5 dakika bekle
         new_screenshot_path = capture_screenshot(URL)
         if new_screenshot_path:
             await send_telegram_message(new_screenshot_path)
