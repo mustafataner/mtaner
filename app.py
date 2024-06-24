@@ -1,9 +1,10 @@
-import requests
-from lxml import html
+import os
+import asyncio
+from selenium import webdriver
+from selenium.webdriver.chrome.service import Service as ChromeService
+from webdriver_manager.chrome import ChromeDriverManager
 from telegram import Bot
 from telegram.constants import ParseMode
-import asyncio
-import os
 
 # Duyuru sayfası URL'si
 URL = 'http://www.diyarbakir.gov.tr/duyurular'
@@ -14,30 +15,32 @@ CHAT_ID = os.getenv('CHAT_ID')
 
 bot = Bot(token=BOT_TOKEN)
 
-async def send_telegram_message(message):
-    await bot.send_message(chat_id=CHAT_ID, text=message, parse_mode=ParseMode.HTML)
+async def send_telegram_message(image_path):
+    await bot.send_photo(chat_id=CHAT_ID, photo=open(image_path, 'rb'))
 
-def get_latest_announcement(url):
-    response = requests.get(url)
-    tree = html.fromstring(response.content)
-    latest_announcement = tree.xpath('/html/body/div[1]/div[2]/div/div[2]/div/div/div[2]/div/div[2]/div/div/div/div[3]/div[1]/div/div/a/@href')
-    if latest_announcement:
-        return "http://www.diyarbakir.gov.tr" + latest_announcement[0]
-    return None
+def capture_screenshot(url):
+    options = webdriver.ChromeOptions()
+    options.add_argument("--headless")
+    options.add_argument("--no-sandbox")
+    options.add_argument("--disable-dev-shm-usage")
+    driver = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()), options=options)
+    
+    driver.get(url)
+    screenshot_path = "/tmp/duyurular_screenshot.png"
+    driver.save_screenshot(screenshot_path)
+    driver.quit()
+    return screenshot_path
 
 async def check_for_updates():
-    latest_announcement = get_latest_announcement(URL)
-    if latest_announcement:
-        await send_telegram_message(f"Son duyuru: {latest_announcement}")
-    else:
-        await send_telegram_message("Duyuru bulunamadı.")
+    screenshot_path = capture_screenshot(URL)
+    if screenshot_path:
+        await send_telegram_message(screenshot_path)
     
     while True:
         await asyncio.sleep(900)  # 15 dakika bekle
-        new_announcement = get_latest_announcement(URL)
-        if new_announcement != latest_announcement:
-            await send_telegram_message(f"Yeni duyuru: {new_announcement}")
-            latest_announcement = new_announcement
+        new_screenshot_path = capture_screenshot(URL)
+        if new_screenshot_path:
+            await send_telegram_message(new_screenshot_path)
 
 if __name__ == '__main__':
     asyncio.run(check_for_updates())
