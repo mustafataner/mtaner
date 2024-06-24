@@ -1,5 +1,5 @@
 import requests
-from bs4 import BeautifulSoup
+from lxml import html
 from telegram import Bot
 from telegram.constants import ParseMode
 import asyncio
@@ -19,11 +19,18 @@ async def send_telegram_message(message):
 
 def get_latest_announcement(url):
     response = requests.get(url)
-    soup = BeautifulSoup(response.text, 'html.parser')
-    # Sağlanan XPath kullanılarak duyuru bağlantısını bulma
-    latest_announcement = soup.select_one('div.card-content.d-md-flex.flex-column.announcementdaha a.announce-text[href]')
+    tree = html.fromstring(response.content)
+    latest_announcement = tree.xpath('/html/body/div[1]/div[2]/div/div[2]/div/div/div[2]/div/div[2]/div/div/div/div[3]/div[1]/div/div/a/@href')
     if latest_announcement:
-        return "http://www.diyarbakir.gov.tr" + latest_announcement['href']
+        return "http://www.diyarbakir.gov.tr" + latest_announcement[0]
+    return None
+
+def get_second_latest_announcement(url):
+    response = requests.get(url)
+    tree = html.fromstring(response.content)
+    second_latest_announcement = tree.xpath('/html/body/div[1]/div[2]/div/div[2]/div/div/div[2]/div/div[2]/div/div/div/div[3]/div[2]/div/div/a/@href')
+    if second_latest_announcement:
+        return "http://www.diyarbakir.gov.tr" + second_latest_announcement[0]
     return None
 
 async def check_for_updates():
@@ -32,6 +39,7 @@ async def check_for_updates():
         await send_telegram_message(f"Son duyuru: {latest_announcement}")
     else:
         await send_telegram_message("Duyuru bulunamadı.")
+    second_latest_announcement = get_second_latest_announcement(URL)
     while True:
         await asyncio.sleep(900)  # 15 dakika bekle
         new_announcement = get_latest_announcement(URL)
